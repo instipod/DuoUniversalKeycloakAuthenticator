@@ -31,27 +31,29 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
         String hostname = authConfig.getConfig().get(DuoUniversalAuthenticatorFactory.DUO_API_HOSTNAME);
 
         String overrides = authConfig.getConfig().get(DuoUniversalAuthenticatorFactory.DUO_CUSTOM_CLIENT_IDS);
-        //multivalue string seperator is ##
-        String[] overridesSplit = overrides.split("##");
-        for (String override : overridesSplit) {
-            String[] parts = override.split(",");
-            if (parts.length == 3 || parts.length == 4) {
-                String duoHostname;
-                if (parts.length == 3) {
-                    duoHostname = hostname;
-                } else {
-                    duoHostname = parts[3];
-                }
-                //valid entries have 3 or 4 parts: keycloak client id, duo id, duo secret, (optional) api hostname
-                String keycloakClient = parts[0];
-                String duoId = parts[1];
-                String duoSecret = parts[2];
+        if (overrides != null && !overrides.equalsIgnoreCase("")) {
+            //multivalue string seperator is ##
+            String[] overridesSplit = overrides.split("##");
+            for (String override : overridesSplit) {
+                String[] parts = override.split(",");
+                if (parts.length == 3 || parts.length == 4) {
+                    String duoHostname;
+                    if (parts.length == 3) {
+                        duoHostname = hostname;
+                    } else {
+                        duoHostname = parts[3];
+                    }
+                    //valid entries have 3 or 4 parts: keycloak client id, duo id, duo secret, (optional) api hostname
+                    String keycloakClient = parts[0];
+                    String duoId = parts[1];
+                    String duoSecret = parts[2];
 
-                if (keycloakClient.equalsIgnoreCase(context.getAuthenticationSession().getClient().getId())) {
-                    //found a specific client override
-                    clientId = duoId;
-                    secret = duoSecret;
-                    hostname = duoHostname;
+                    if (keycloakClient.equalsIgnoreCase(context.getAuthenticationSession().getClient().getId())) {
+                        //found a specific client override
+                        clientId = duoId;
+                        secret = duoSecret;
+                        hostname = duoHostname;
+                    }
                 }
             }
         }
