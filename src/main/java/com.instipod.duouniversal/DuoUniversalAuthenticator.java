@@ -16,13 +16,47 @@ import org.keycloak.models.utils.FormMessage;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.List;
 
 public class DuoUniversalAuthenticator implements org.keycloak.authentication.Authenticator {
     public static final DuoUniversalAuthenticator SINGLETON = new DuoUniversalAuthenticator();
     private static Logger logger = Logger.getLogger(DuoUniversalAuthenticator.class);
 
-    private Client initDuoClient(AuthenticatorConfigModel authConfig, String redirectUrl) throws DuoException {
-        Client client = new Client.Builder(authConfig.getConfig().get(DuoUniversalAuthenticatorFactory.DUO_INTEGRATION_KEY), authConfig.getConfig().get(DuoUniversalAuthenticatorFactory.DUO_SECRET_KEY), authConfig.getConfig().get(DuoUniversalAuthenticatorFactory.DUO_API_HOSTNAME), redirectUrl).build();
+    private Client initDuoClient(AuthenticationFlowContext context, String redirectUrl) throws DuoException {
+        AuthenticatorConfigModel authConfig = context.getAuthenticatorConfig();
+
+        //default values
+        String clientId = authConfig.getConfig().get(DuoUniversalAuthenticatorFactory.DUO_INTEGRATION_KEY);
+        String secret = authConfig.getConfig().get(DuoUniversalAuthenticatorFactory.DUO_SECRET_KEY);
+        String hostname = authConfig.getConfig().get(DuoUniversalAuthenticatorFactory.DUO_API_HOSTNAME);
+
+        String overrides = authConfig.getConfig().get(DuoUniversalAuthenticatorFactory.DUO_CUSTOM_CLIENT_IDS);
+        //multivalue string seperator is ##
+        String[] overridesSplit = overrides.split("##");
+        for (String override : overridesSplit) {
+            String[] parts = override.split(",");
+            if (parts.length == 3 || parts.length == 4) {
+                String duoHostname;
+                if (parts.length == 3) {
+                    duoHostname = hostname;
+                } else {
+                    duoHostname = parts[3];
+                }
+                //valid entries have 3 or 4 parts: keycloak client id, duo id, duo secret, (optional) api hostname
+                String keycloakClient = parts[0];
+                String duoId = parts[1];
+                String duoSecret = parts[2];
+
+                if (keycloakClient.equalsIgnoreCase(context.getAuthenticationSession().getClient().getId())) {
+                    //found a specific client override
+                    clientId = duoId;
+                    secret = duoSecret;
+                    hostname = duoHostname;
+                }
+            }
+        }
+
+        Client client = new Client.Builder(clientId, secret, hostname, redirectUrl).build();
         return client;
     }
 
@@ -75,7 +109,7 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
 
                 boolean authSuccess = false;
                 try {
-                    Client duoClient = this.initDuoClient(authConfig, redirectUrl);
+                    Client duoClient = this.initDuoClient(authenticationFlowContext, redirectUrl);
                     Token token = duoClient.exchangeAuthorizationCodeFor2FAResult(duoCode, username);
 
                     if (token != null && token.getAuth_result() != null) {
@@ -123,7 +157,7 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
         Client duoClient;
 
         try {
-            duoClient = this.initDuoClient(authConfig, redirectUrl);
+            duoClient = this.initDuoClient(authenticationFlowContext, redirectUrl);
             duoClient.healthCheck();
         } catch (DuoException exception) {
             //Duo is not available
