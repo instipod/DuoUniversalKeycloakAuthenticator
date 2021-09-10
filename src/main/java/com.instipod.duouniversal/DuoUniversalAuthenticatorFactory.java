@@ -20,7 +20,7 @@ public class DuoUniversalAuthenticatorFactory implements org.keycloak.authentica
     protected static final String DUO_FAIL_SAFE = "duoFailSafe";
     protected static final String DUO_CUSTOM_CLIENT_IDS = "duoClientIds";
 
-    private static List<ProviderConfigProperty> commonConfig;
+    private final static List<ProviderConfigProperty> commonConfig;
 
     static {
         commonConfig = Collections.unmodifiableList(ProviderConfigurationBuilder.create()

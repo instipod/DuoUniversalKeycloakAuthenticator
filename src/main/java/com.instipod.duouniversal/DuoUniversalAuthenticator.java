@@ -16,11 +16,10 @@ import org.keycloak.models.utils.FormMessage;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.List;
 
 public class DuoUniversalAuthenticator implements org.keycloak.authentication.Authenticator {
     public static final DuoUniversalAuthenticator SINGLETON = new DuoUniversalAuthenticator();
-    private static Logger logger = Logger.getLogger(DuoUniversalAuthenticator.class);
+    private final static Logger logger = Logger.getLogger(DuoUniversalAuthenticator.class);
 
     private String getRedirectUrl(AuthenticationFlowContext context) {
         return getRedirectUrl(context, false);
@@ -41,7 +40,7 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
 
     private String getRedirectUrlShim(AuthenticationFlowContext context, Boolean forceToken) {
         MultivaluedMap<String, String> queryParams = context.getHttpRequest().getUri().getQueryParameters();
-        String sessionCode = "";
+        String sessionCode;
         if (queryParams.containsKey("duo_code") && queryParams.containsKey("session_code") && !forceToken) {
             //Duo requires the same session_code as the first redirect in order to retrieve the token
             sessionCode = queryParams.getFirst("session_code");
@@ -96,8 +95,7 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
             }
         }
 
-        Client client = new Client.Builder(clientId, secret, hostname, redirectUrl).build();
-        return client;
+        return new Client.Builder(clientId, secret, hostname, redirectUrl).build();
     }
 
     @Override
@@ -126,10 +124,9 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
         }
         String username = user.getUsername();
 
-        boolean firstRequest = true;
         //determine the user desire
         //if a duo state is set, assume it is the second request
-        firstRequest = !(authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_STATE") != "" && authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_STATE") != null);
+        boolean firstRequest = !(!authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_STATE").isEmpty() && authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_STATE") != null);
 
         if (firstRequest) {
             //send client to duo to authenticate
