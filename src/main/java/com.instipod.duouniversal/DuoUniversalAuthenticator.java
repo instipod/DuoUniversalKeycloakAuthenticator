@@ -126,7 +126,7 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
 
         //determine the user desire
         //if a duo state is set, assume it is the second request
-        boolean firstRequest = !(!authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_STATE").isEmpty() && authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_STATE") != null);
+        boolean firstRequest = !(authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_STATE") != null && !authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_STATE").isEmpty());
 
         if (firstRequest) {
             //send client to duo to authenticate
