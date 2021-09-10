@@ -28,7 +28,7 @@ public class GetShimProvider implements RealmResourceProvider {
     public Response get(@Context UriInfo uriInfo) {
         String realm = "";
         try {
-            realm = uriInfo.getPath().split("realms/")[1].split("/")[0];
+            realm = session.getContext().getRealm().getName();
         } catch (Exception exception) {
             //leave realm blank
         }
