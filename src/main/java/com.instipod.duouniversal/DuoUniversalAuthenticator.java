@@ -22,6 +22,44 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
     public static final DuoUniversalAuthenticator SINGLETON = new DuoUniversalAuthenticator();
     private static Logger logger = Logger.getLogger(DuoUniversalAuthenticator.class);
 
+    private String getRedirectUrl(AuthenticationFlowContext context) {
+        return getRedirectUrl(context, false);
+    }
+
+    private String getRedirectUrl(AuthenticationFlowContext context, Boolean forceToken) {
+        if (context.getExecution().isAlternative()) {
+            //We only need to shim in an alternative case, as the user may be able to "try another way"
+            return getRedirectUrlShim(context, forceToken);
+        } else {
+            return getRedirectUrlRefresh(context);
+        }
+    }
+
+    private String getRedirectUrlRefresh(AuthenticationFlowContext context) {
+        return context.getRefreshUrl(false).toString();
+    }
+
+    private String getRedirectUrlShim(AuthenticationFlowContext context, Boolean forceToken) {
+        MultivaluedMap<String, String> queryParams = context.getHttpRequest().getUri().getQueryParameters();
+        String sessionCode = "";
+        if (queryParams.containsKey("duo_code") && queryParams.containsKey("session_code") && !forceToken) {
+            //Duo requires the same session_code as the first redirect in order to retrieve the token
+            sessionCode = queryParams.getFirst("session_code");
+        } else {
+            sessionCode = context.generateAccessCode();
+        }
+
+        String baseUrl = context.getHttpRequest().getUri().getBaseUri().toString();
+        baseUrl = baseUrl + "realms/" + context.getRealm().getName() + "/duo-universal/callback";
+        baseUrl = baseUrl + "?kc_client_id=" + context.getAuthenticationSession().getClient().getClientId();
+        baseUrl = baseUrl + "&kc_execution=" + context.getExecution().getId();
+        baseUrl = baseUrl + "&kc_tab_id=" + context.getAuthenticationSession().getTabId();
+        baseUrl = baseUrl + "&kc_session_code=" + sessionCode;
+
+        logger.warn(baseUrl);
+        return baseUrl;
+    }
+
     private Client initDuoClient(AuthenticationFlowContext context, String redirectUrl) throws DuoException {
         AuthenticatorConfigModel authConfig = context.getAuthenticatorConfig();
 
@@ -107,7 +145,7 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
                 String state = queryParams.getFirst("state");
                 String duoCode = queryParams.getFirst("duo_code");
 
-                String redirectUrl = authenticationFlowContext.getRefreshUrl(false).toString();
+                String redirectUrl = getRedirectUrl(authenticationFlowContext);
 
                 boolean authSuccess = false;
                 try {
@@ -155,7 +193,7 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
     private void startDuoProcess(AuthenticationFlowContext authenticationFlowContext, String username) {
         AuthenticatorConfigModel authConfig = authenticationFlowContext.getAuthenticatorConfig();
 
-        String redirectUrl = authenticationFlowContext.getRefreshUrl(false).toString();
+        String redirectUrl = getRedirectUrl(authenticationFlowContext, true);
         Client duoClient;
 
         try {
