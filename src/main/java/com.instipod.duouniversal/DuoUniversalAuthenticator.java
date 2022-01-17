@@ -137,7 +137,7 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
             String loginState = authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_STATE");
             String loginUsername = authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_USERNAME");
 
-            MultivaluedMap<String, String> queryParams = authenticationFlowContext.getHttpRequest().getUri().getQueryParameters();
+            MultivaluedMap<String, String> queryParams = authenticationFlowContext.getUriInfo().getQueryParameters();
             if (queryParams.containsKey("state") && queryParams.containsKey("duo_code")) {
                 String state = queryParams.getFirst("state");
                 String duoCode = queryParams.getFirst("duo_code");
