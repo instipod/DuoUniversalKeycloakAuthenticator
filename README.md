@@ -6,7 +6,7 @@ This has been tested against Keycloak 17.0.0 (Quarkus) and Java 11.0.9.1.  It ma
 ## How to use
 ### Install the authenticator extension
 1. Build or download the pre-built "DuoUniversalKeycloakAuthenticator-jar-with-dependencies.jar" JAR file.
-2. Copy this JAR file to the deployments folder on the Keycloak server.  The exact location of this folder may be different depending on the installation configuration.  For example, in the official Docker image, the path is `/opt/jboss/keycloak/standalone/deployments`.
+2. Copy this JAR file to the deployments folder on the Keycloak server.  The exact location of this folder may be different depending on the installation configuration.  For example, in the Quarkus docker image, the path is `/opt/keycloak/providers`.  In the legacy Docker image using WildFly, the path is `/opt/jboss/keycloak/standalone/deployments`.
 3. Restart the Keycloak application server.
 
 ### Configure the authenticator
