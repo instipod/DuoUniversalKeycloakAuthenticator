@@ -6,7 +6,7 @@
 
     <groupId>com.instipod</groupId>
     <artifactId>DuoUniversalKeycloakAuthenticator</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -23,35 +23,28 @@
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-core</artifactId>
-            <version>11.0.3</version>
+            <version>18.0.0</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-server-spi</artifactId>
-            <version>11.0.3</version>
+            <version>18.0.0</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-server-spi-private</artifactId>
-            <version>11.0.3</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging</artifactId>
-            <version>3.4.1.Final</version>
+            <version>18.0.0</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-services</artifactId>
-            <version>11.0.3</version>
+            <version>18.0.0</version>
             <scope>provided</scope>
         </dependency>
 
@@ -72,7 +65,7 @@
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-common</artifactId>
-            <version>11.0.3</version>
+            <version>18.0.0</version>
             <scope>provided</scope>
         </dependency>
 
@@ -94,14 +87,6 @@
                 <configuration>
                     <source>11</source>
                     <target>11</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-maven-plugin</artifactId>
-                <version>2.0.1.Final</version>
-                <configuration>
-                    <skip>false</skip>
                 </configuration>
             </plugin>
             <plugin>
