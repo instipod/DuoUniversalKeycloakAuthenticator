@@ -6,6 +6,7 @@ import com.duosecurity.model.Token;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
+import org.keycloak.authentication.Authenticator;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
@@ -16,8 +17,9 @@ import org.keycloak.models.utils.FormMessage;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.Map;
 
-public class DuoUniversalAuthenticator implements org.keycloak.authentication.Authenticator {
+public class DuoUniversalAuthenticator implements Authenticator {
     public static final DuoUniversalAuthenticator SINGLETON = new DuoUniversalAuthenticator();
     private final static Logger logger = Logger.getLogger(DuoUniversalAuthenticator.class);
 
@@ -102,17 +104,35 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
     public void authenticate(AuthenticationFlowContext authenticationFlowContext) {
         AuthenticatorConfigModel authConfig = authenticationFlowContext.getAuthenticatorConfig();
 
-        if (authConfig.getConfig().getOrDefault(DuoUniversalAuthenticatorFactory.DUO_API_HOSTNAME, "none").equalsIgnoreCase("none")) {
-            //authenticator not configured
+        Map<String, String> authConfigMap;
+        try {
+            if (authConfig == null) {
+                throw new NullPointerException();
+            }
+            authConfigMap = authConfig.getConfig();
+        } catch (NullPointerException authConfigMapNull) {
+            logger.error("Duo Authenticator is not configured!  All authentications will fail.");
             authenticationFlowContext.failure(AuthenticationFlowError.INTERNAL_ERROR);
+            return;
         }
-        if (authConfig.getConfig().getOrDefault(DuoUniversalAuthenticatorFactory.DUO_INTEGRATION_KEY, "none").equalsIgnoreCase("none")) {
+
+        if (authConfigMap.getOrDefault(DuoUniversalAuthenticatorFactory.DUO_API_HOSTNAME, "none").equalsIgnoreCase("none")) {
             //authenticator not configured
+            logger.error("Duo Authenticator is missing API hostname configuration!  All authentications will fail.");
             authenticationFlowContext.failure(AuthenticationFlowError.INTERNAL_ERROR);
+            return;
         }
-        if (authConfig.getConfig().getOrDefault(DuoUniversalAuthenticatorFactory.DUO_SECRET_KEY, "none").equalsIgnoreCase("none")) {
+        if (authConfigMap.getOrDefault(DuoUniversalAuthenticatorFactory.DUO_INTEGRATION_KEY, "none").equalsIgnoreCase("none")) {
             //authenticator not configured
+            logger.error("Duo Authenticator is missing Integration Key configuration!  All authentications will fail.");
             authenticationFlowContext.failure(AuthenticationFlowError.INTERNAL_ERROR);
+            return;
+        }
+        if (authConfigMap.getOrDefault(DuoUniversalAuthenticatorFactory.DUO_SECRET_KEY, "none").equalsIgnoreCase("none")) {
+            //authenticator not configured
+            logger.error("Duo Authenticator is missing Secret Key configuration!  All authentications will fail.");
+            authenticationFlowContext.failure(AuthenticationFlowError.INTERNAL_ERROR);
+            return;
         }
 
         UserModel user = authenticationFlowContext.getUser();
@@ -131,7 +151,6 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
         if (firstRequest) {
             //send client to duo to authenticate
             this.startDuoProcess(authenticationFlowContext, username);
-            return;
         } else {
             //handle duo response
             String loginState = authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_STATE");
@@ -177,18 +196,17 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
                     LoginFormsProvider provider = authenticationFlowContext.form().addError(new FormMessage(null, "You did not pass multifactor verification."));
                     authenticationFlowContext.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, provider.createErrorPage(Response.Status.FORBIDDEN));
                 }
-                return;
             } else {
                 //missing required information
                 logger.warn("Received a Duo callback that was missing information.  Starting over.");
                 this.startDuoProcess(authenticationFlowContext, username);
-                return;
             }
         }
     }
 
     private void startDuoProcess(AuthenticationFlowContext authenticationFlowContext, String username) {
         AuthenticatorConfigModel authConfig = authenticationFlowContext.getAuthenticatorConfig();
+        //authConfig should be safe at this point, as it will be checked in the calling method
 
         String redirectUrl = getRedirectUrl(authenticationFlowContext, true);
         Client duoClient;
@@ -199,7 +217,7 @@ public class DuoUniversalAuthenticator implements org.keycloak.authentication.Au
         } catch (DuoException exception) {
             //Duo is not available
             logger.warn("Duo was not reachable!");
-            if (authConfig.getConfig().getOrDefault(DuoUniversalAuthenticatorFactory.DUO_FAIL_SAFE, "true").equalsIgnoreCase("false")) {
+            if (authConfig.getConfig().getOrDefault(DuoUniversalAuthenticatorFactory.DUO_FAIL_SAFE, "false").equalsIgnoreCase("false")) {
                 //fail secure, deny login
                 authenticationFlowContext.failure(AuthenticationFlowError.INVALID_CREDENTIALS);
             } else {
