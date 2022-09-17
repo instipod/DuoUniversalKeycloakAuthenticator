@@ -57,7 +57,6 @@ public class DuoUniversalAuthenticator implements Authenticator {
         baseUrl = baseUrl + "&kc_tab_id=" + context.getAuthenticationSession().getTabId();
         baseUrl = baseUrl + "&kc_session_code=" + sessionCode;
 
-        logger.warn(baseUrl);
         return baseUrl;
     }
 
@@ -216,7 +215,7 @@ public class DuoUniversalAuthenticator implements Authenticator {
             duoClient.healthCheck();
         } catch (DuoException exception) {
             //Duo is not available
-            logger.warn("Duo was not reachable!");
+            logger.warn("Authentication against Duo failed with exception: " + exception);
             if (authConfig.getConfig().getOrDefault(DuoUniversalAuthenticatorFactory.DUO_FAIL_SAFE, "false").equalsIgnoreCase("false")) {
                 //fail secure, deny login
                 authenticationFlowContext.failure(AuthenticationFlowError.INVALID_CREDENTIALS);
