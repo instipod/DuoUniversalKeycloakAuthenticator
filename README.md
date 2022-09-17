@@ -1,12 +1,12 @@
 # DuoUniversalKeycloakAuthenticator
 Authenticator for [Keycloak](https://github.com/keycloak/keycloak) that uses Duo's [Java Universal Prompt SDK](https://github.com/duosecurity/duo_universal_java) to challenge the user for Duo MFA as part of a Keycloak login flow.
 
-This has been tested against Keycloak 17.0.0 (Quarkus) and Java 11.0.9.1.  It may against other versions of Keycloak and Java as well.
+This has been tested against Keycloak 18.0.0 (Quarkus) and Java 11.0.15.  It may work against other versions of Keycloak and Java as well but is untested.
 
 ## How to use
 ### Install the authenticator extension
 1. Build or download the pre-built "DuoUniversalKeycloakAuthenticator-jar-with-dependencies.jar" JAR file.
-2. Copy this JAR file to the deployments folder on the Keycloak server.  The exact location of this folder may be different depending on the installation configuration.  For example, in the Quarkus docker image, the path is `/opt/keycloak/providers`.  In the legacy Docker image using WildFly, the path is `/opt/jboss/keycloak/standalone/deployments`.
+2. Copy this JAR file to the deployments folder on the Keycloak server.  The exact location of this folder may be different depending on the installation configuration.  For example, in the Quarkus (Keycloak 17.0+ default) docker image, the path is `/opt/keycloak/providers`.  In the legacy Docker image using WildFly, the path is `/opt/jboss/keycloak/standalone/deployments`.
 3. Restart the Keycloak application server.
 
 ### Configure the authenticator
