@@ -11,6 +11,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <keycloak.version>18.0.0</keycloak.version>
     </properties>
 
     <dependencies>
@@ -23,28 +24,35 @@
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-core</artifactId>
-            <version>18.0.0</version>
+            <version>${keycloak.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-server-spi</artifactId>
-            <version>18.0.0</version>
+            <version>${keycloak.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-server-spi-private</artifactId>
-            <version>18.0.0</version>
+            <version>${keycloak.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-services</artifactId>
-            <version>18.0.0</version>
+            <version>${keycloak.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-common</artifactId>
+            <version>${keycloak.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -59,13 +67,6 @@
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
             <version>1.0.4</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-common</artifactId>
-            <version>18.0.0</version>
             <scope>provided</scope>
         </dependency>
 
