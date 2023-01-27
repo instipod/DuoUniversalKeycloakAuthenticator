@@ -12,12 +12,16 @@ import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.GroupModel;
 import org.keycloak.models.utils.FormMessage;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.List;
 
 public class DuoUniversalAuthenticator implements Authenticator {
     public static final DuoUniversalAuthenticator SINGLETON = new DuoUniversalAuthenticator();
@@ -133,6 +137,7 @@ public class DuoUniversalAuthenticator implements Authenticator {
             authenticationFlowContext.failure(AuthenticationFlowError.INTERNAL_ERROR);
             return;
         }
+        String duoGroups = authConfigMap.getOrDefault(DuoUniversalAuthenticatorFactory.DUO_GROUPS, "none");
 
         UserModel user = authenticationFlowContext.getUser();
         if (user == null) {
@@ -142,6 +147,12 @@ public class DuoUniversalAuthenticator implements Authenticator {
             return;
         }
         String username = user.getUsername();
+        if (!duoRequired(duoGroups, user)) {
+            String userGroupsStr = user.getGroups().stream().map(GroupModel::getName).collect(Collectors.joining(","));
+            logger.infof("Skipping Duo MFA for %s based on group membership, groups=%s", username, userGroupsStr);
+            authenticationFlowContext.success();
+            return;
+        }
 
         //determine the user desire
         //if a duo state is set, assume it is the second request
@@ -240,6 +251,19 @@ public class DuoUniversalAuthenticator implements Authenticator {
                 authenticationFlowContext.success();
             }
         }
+    }
+
+    private boolean duoRequired(String duoGroups, UserModel user) {
+        if (duoGroups == null) return true;
+        if (duoGroups == "none") return true;
+        if (duoGroups != null && duoGroups.isEmpty()) return true;
+        List<String> groups = Arrays.asList(duoGroups.split(","));
+        for (GroupModel group : user.getGroups()) {
+            if (groups.contains(group.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

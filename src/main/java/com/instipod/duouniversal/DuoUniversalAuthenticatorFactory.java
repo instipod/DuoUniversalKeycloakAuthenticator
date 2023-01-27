@@ -17,6 +17,7 @@ public class DuoUniversalAuthenticatorFactory implements org.keycloak.authentica
     protected static final String DUO_API_HOSTNAME = "duoApiHostname";
     protected static final String DUO_INTEGRATION_KEY = "duoIntegrationKey";
     protected static final String DUO_SECRET_KEY = "duoSecretKey";
+    protected static final String DUO_GROUPS = "duoGroups";
     protected static final String DUO_FAIL_SAFE = "duoFailSafe";
     protected static final String DUO_CUSTOM_CLIENT_IDS = "duoClientIds";
 
@@ -27,6 +28,7 @@ public class DuoUniversalAuthenticatorFactory implements org.keycloak.authentica
                 .property().name(DUO_API_HOSTNAME).label("Duo API Hostname").helpText("Domain name to contact").type(ProviderConfigProperty.STRING_TYPE).add()
                 .property().name(DUO_INTEGRATION_KEY).label("Duo Integration Key").helpText("Obtained from admin console").type(ProviderConfigProperty.STRING_TYPE).add()
                 .property().name(DUO_SECRET_KEY).label("Duo Secret Key").helpText("Obtained from admin console").type(ProviderConfigProperty.STRING_TYPE).add()
+                .property().name(DUO_GROUPS).label("Duo Groups").helpText("Comma separated list of groups that require Duo (optional)").type(ProviderConfigProperty.STRING_TYPE).add()
                 .property().name(DUO_FAIL_SAFE).label("Fail Safe").helpText("With this enabled, users will be able to login if Duo is not reachable").type(ProviderConfigProperty.BOOLEAN_TYPE).add()
                 .property().name(DUO_CUSTOM_CLIENT_IDS).label("Client Overrides").helpText("Comma separated list of client-specific Duo key overrides (keycloak client id, duo client id, duo secret, (optional) API hostname)").type(ProviderConfigProperty.MULTIVALUED_STRING_TYPE).add()
                 .build()
