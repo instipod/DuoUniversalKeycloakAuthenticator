@@ -148,7 +148,7 @@ public class DuoUniversalAuthenticator implements Authenticator {
         }
         String username = user.getUsername();
         if (!duoRequired(duoGroups, user)) {
-            String userGroupsStr = user.getGroups().stream().map(GroupModel::getName).collect(Collectors.joining(","));
+            String userGroupsStr = user.getGroupsStream().map(GroupModel::getName).collect(Collectors.joining(","));
             logger.infof("Skipping Duo MFA for %s based on group membership, groups=%s", username, userGroupsStr);
             authenticationFlowContext.success();
             return;
@@ -258,8 +258,9 @@ public class DuoUniversalAuthenticator implements Authenticator {
         if (duoGroups == "none") return true;
         if (duoGroups != null && duoGroups.isEmpty()) return true;
         List<String> groups = Arrays.asList(duoGroups.split(","));
-        for (GroupModel group : user.getGroups()) {
-            if (groups.contains(group.getName())) {
+        List<String> groupNames = user.getGroupsStream().map(GroupModel::getName).collect(Collectors.toList());
+        for (String group : groupNames) {
+            if (groups.contains(group)) {
                 return true;
             }
         }
