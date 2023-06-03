@@ -11,7 +11,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class GetShimProvider implements RealmResourceProvider {
-    private KeycloakSession session;
+    private final KeycloakSession session;
 
     public GetShimProvider(KeycloakSession session) {
         this.session = session;
@@ -30,12 +30,12 @@ public class GetShimProvider implements RealmResourceProvider {
         try {
             realm = session.getContext().getRealm().getName();
         } catch (Exception exception) {
-            //leave realm blank
+            // leave realm blank
         }
 
         MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
         if (realm.equalsIgnoreCase("") || !queryParams.containsKey("kc_execution") || !queryParams.containsKey("kc_client_id") || !queryParams.containsKey("kc_tab_id")) {
-            //these fields are required, throw a bad request error
+            // these fields are required, throw a bad request error
             return Response.status(400).build();
         }
 
@@ -48,8 +48,8 @@ public class GetShimProvider implements RealmResourceProvider {
         actionUrl = actionUrl + "&tab_id=" + tabId;
 
         if (!queryParams.containsKey("kc_session_code") || !queryParams.containsKey("state") || !queryParams.containsKey("duo_code")) {
-            //session code is required, redirect back to beginning of auth flow
-            //or if they don't have duo information, send them to beginning as well
+            // session code is required, redirect back to beginning of auth flow
+            // or if they don't have duo information, send them to beginning as well
             try {
                 return Response.temporaryRedirect(new URI(actionUrl)).build();
             } catch (URISyntaxException exception) {

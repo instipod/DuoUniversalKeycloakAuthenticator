@@ -22,6 +22,11 @@ public class DuoUniversalAuthenticatorFactory implements org.keycloak.authentica
     protected static final String DUO_CUSTOM_CLIENT_IDS = "duoClientIds";
 
     private final static List<ProviderConfigProperty> commonConfig;
+    private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
+            AuthenticationExecutionModel.Requirement.REQUIRED,
+            AuthenticationExecutionModel.Requirement.ALTERNATIVE,
+            AuthenticationExecutionModel.Requirement.DISABLED
+    };
 
     static {
         commonConfig = Collections.unmodifiableList(ProviderConfigurationBuilder.create()
@@ -50,10 +55,6 @@ public class DuoUniversalAuthenticatorFactory implements org.keycloak.authentica
         return true;
     }
 
-    private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-            AuthenticationExecutionModel.Requirement.REQUIRED, AuthenticationExecutionModel.Requirement.ALTERNATIVE, AuthenticationExecutionModel.Requirement.DISABLED
-    };
-
     @Override
     public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
         return REQUIREMENT_CHOICES;
@@ -81,17 +82,17 @@ public class DuoUniversalAuthenticatorFactory implements org.keycloak.authentica
 
     @Override
     public void init(Config.Scope scope) {
-        //noop
+        // noop
     }
 
     @Override
     public void postInit(KeycloakSessionFactory keycloakSessionFactory) {
-        //noop
+        // noop
     }
 
     @Override
     public void close() {
-        //noop
+        // noop
     }
 
     @Override
