@@ -8,20 +8,16 @@ import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.GroupModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.FormMessage;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class DuoUniversalAuthenticator implements Authenticator {
     public static final DuoUniversalAuthenticator SINGLETON = new DuoUniversalAuthenticator();
@@ -33,7 +29,7 @@ public class DuoUniversalAuthenticator implements Authenticator {
 
     private String getRedirectUrl(AuthenticationFlowContext context, Boolean forceToken) {
         if (context.getExecution().isAlternative()) {
-            //We only need to shim in an alternative case, as the user may be able to "try another way"
+            // We only need to shim in an alternative case, as the user may be able to "try another way"
             return getRedirectUrlShim(context, forceToken);
         } else {
             return getRedirectUrlRefresh(context);
@@ -48,7 +44,7 @@ public class DuoUniversalAuthenticator implements Authenticator {
         MultivaluedMap<String, String> queryParams = context.getHttpRequest().getUri().getQueryParameters();
         String sessionCode;
         if (queryParams.containsKey("duo_code") && queryParams.containsKey("session_code") && !forceToken) {
-            //Duo requires the same session_code as the first redirect in order to retrieve the token
+            // Duo requires the same session_code as the first redirect in order to retrieve the token
             sessionCode = queryParams.getFirst("session_code");
         } else {
             sessionCode = context.generateAccessCode();
@@ -67,14 +63,14 @@ public class DuoUniversalAuthenticator implements Authenticator {
     private Client initDuoClient(AuthenticationFlowContext context, String redirectUrl) throws DuoException {
         AuthenticatorConfigModel authConfig = context.getAuthenticatorConfig();
 
-        //default values
+        // default values
         String clientId = authConfig.getConfig().get(DuoUniversalAuthenticatorFactory.DUO_INTEGRATION_KEY);
         String secret = authConfig.getConfig().get(DuoUniversalAuthenticatorFactory.DUO_SECRET_KEY);
         String hostname = authConfig.getConfig().get(DuoUniversalAuthenticatorFactory.DUO_API_HOSTNAME);
 
         String overrides = authConfig.getConfig().get(DuoUniversalAuthenticatorFactory.DUO_CUSTOM_CLIENT_IDS);
         if (overrides != null && !overrides.equalsIgnoreCase("")) {
-            //multivalue string seperator is ##
+            // multivalue string seperator is ##
             String[] overridesSplit = overrides.split("##");
             for (String override : overridesSplit) {
                 String[] parts = override.split(",");
@@ -85,13 +81,13 @@ public class DuoUniversalAuthenticator implements Authenticator {
                     } else {
                         duoHostname = parts[3];
                     }
-                    //valid entries have 3 or 4 parts: keycloak client id, duo id, duo secret, (optional) api hostname
+                    // valid entries have 3 or 4 parts: keycloak client id, duo id, duo secret, (optional) api hostname
                     String keycloakClient = parts[0];
                     String duoId = parts[1];
                     String duoSecret = parts[2];
 
                     if (keycloakClient.equalsIgnoreCase(context.getAuthenticationSession().getClient().getId())) {
-                        //found a specific client override
+                        // found a specific client override
                         clientId = duoId;
                         secret = duoSecret;
                         hostname = duoHostname;
@@ -120,19 +116,19 @@ public class DuoUniversalAuthenticator implements Authenticator {
         }
 
         if (authConfigMap.getOrDefault(DuoUniversalAuthenticatorFactory.DUO_API_HOSTNAME, "none").equalsIgnoreCase("none")) {
-            //authenticator not configured
+            // authenticator not configured
             logger.error("Duo Authenticator is missing API hostname configuration!  All authentications will fail.");
             authenticationFlowContext.failure(AuthenticationFlowError.INTERNAL_ERROR);
             return;
         }
         if (authConfigMap.getOrDefault(DuoUniversalAuthenticatorFactory.DUO_INTEGRATION_KEY, "none").equalsIgnoreCase("none")) {
-            //authenticator not configured
+            // authenticator not configured
             logger.error("Duo Authenticator is missing Integration Key configuration!  All authentications will fail.");
             authenticationFlowContext.failure(AuthenticationFlowError.INTERNAL_ERROR);
             return;
         }
         if (authConfigMap.getOrDefault(DuoUniversalAuthenticatorFactory.DUO_SECRET_KEY, "none").equalsIgnoreCase("none")) {
-            //authenticator not configured
+            // authenticator not configured
             logger.error("Duo Authenticator is missing Secret Key configuration!  All authentications will fail.");
             authenticationFlowContext.failure(AuthenticationFlowError.INTERNAL_ERROR);
             return;
@@ -141,7 +137,7 @@ public class DuoUniversalAuthenticator implements Authenticator {
 
         UserModel user = authenticationFlowContext.getUser();
         if (user == null) {
-            //no username
+            // no username
             logger.error("Received a flow request with no user!  Returning internal error.");
             authenticationFlowContext.failure(AuthenticationFlowError.INTERNAL_ERROR);
             return;
@@ -154,15 +150,15 @@ public class DuoUniversalAuthenticator implements Authenticator {
             return;
         }
 
-        //determine the user desire
-        //if a duo state is set, assume it is the second request
+        // determine the user desire
+        // if a duo state is set, assume it is the second request
         boolean firstRequest = !(authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_STATE") != null && !authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_STATE").isEmpty());
 
         if (firstRequest) {
-            //send client to duo to authenticate
+            // send client to duo to authenticate
             this.startDuoProcess(authenticationFlowContext, username);
         } else {
-            //handle duo response
+            // handle duo response
             String loginState = authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_STATE");
             String loginUsername = authenticationFlowContext.getAuthenticationSession().getAuthNote("DUO_USERNAME");
 
@@ -190,12 +186,12 @@ public class DuoUniversalAuthenticator implements Authenticator {
                 }
 
                 if (!loginState.equalsIgnoreCase(state)) {
-                    //sanity check the session
+                    // sanity check the session
                     this.startDuoProcess(authenticationFlowContext, username);
                     return;
                 }
                 if (!username.equalsIgnoreCase(loginUsername)) {
-                    //sanity check the session
+                    // sanity check the session
                     this.startDuoProcess(authenticationFlowContext, username);
                     return;
                 }
@@ -207,7 +203,7 @@ public class DuoUniversalAuthenticator implements Authenticator {
                     authenticationFlowContext.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, provider.createErrorPage(Response.Status.FORBIDDEN));
                 }
             } else {
-                //missing required information
+                // missing required information
                 logger.warn("Received a Duo callback that was missing information.  Starting over.");
                 this.startDuoProcess(authenticationFlowContext, username);
             }
@@ -216,7 +212,7 @@ public class DuoUniversalAuthenticator implements Authenticator {
 
     private void startDuoProcess(AuthenticationFlowContext authenticationFlowContext, String username) {
         AuthenticatorConfigModel authConfig = authenticationFlowContext.getAuthenticatorConfig();
-        //authConfig should be safe at this point, as it will be checked in the calling method
+        // authConfig should be safe at this point, as it will be checked in the calling method
 
         String redirectUrl = getRedirectUrl(authenticationFlowContext, true);
         Client duoClient;
@@ -225,10 +221,10 @@ public class DuoUniversalAuthenticator implements Authenticator {
             duoClient = this.initDuoClient(authenticationFlowContext, redirectUrl);
             duoClient.healthCheck();
         } catch (DuoException exception) {
-            //Duo is not available
+            // Duo is not available
             logger.warn("Authentication against Duo failed with exception: " + exception);
             if (authConfig.getConfig().getOrDefault(DuoUniversalAuthenticatorFactory.DUO_FAIL_SAFE, "false").equalsIgnoreCase("false")) {
-                //fail secure, deny login
+                // fail secure, deny login
                 authenticationFlowContext.failure(AuthenticationFlowError.INVALID_CREDENTIALS);
             } else {
                 authenticationFlowContext.success();
@@ -245,7 +241,7 @@ public class DuoUniversalAuthenticator implements Authenticator {
             authenticationFlowContext.challenge(Response.temporaryRedirect(new URI(startingUrl)).build());
         } catch (Exception exception) {
             if (authConfig.getConfig().getOrDefault(DuoUniversalAuthenticatorFactory.DUO_FAIL_SAFE, "true").equalsIgnoreCase("false")) {
-                //fail secure, deny login
+                // fail secure, deny login
                 authenticationFlowContext.failure(AuthenticationFlowError.INVALID_CREDENTIALS);
             } else {
                 authenticationFlowContext.success();
@@ -254,17 +250,12 @@ public class DuoUniversalAuthenticator implements Authenticator {
     }
 
     private boolean duoRequired(String duoGroups, UserModel user) {
-        if (duoGroups == null) return true;
-        if (duoGroups == "none") return true;
-        if (duoGroups != null && duoGroups.isEmpty()) return true;
-        List<String> groups = Arrays.asList(duoGroups.split(","));
-        List<String> groupNames = user.getGroupsStream().map(GroupModel::getName).collect(Collectors.toList());
-        for (String group : groupNames) {
-            if (groups.contains(group)) {
-                return true;
-            }
+        if (duoGroups == null || duoGroups.strip().equals("") || duoGroups.strip().equals("none")) {
+            return true;
         }
-        return false;
+
+        List<String> groups = Arrays.asList(duoGroups.split(","));
+        return user.getGroupsStream().anyMatch(g -> groups.contains(g.getName()));
     }
 
     @Override
