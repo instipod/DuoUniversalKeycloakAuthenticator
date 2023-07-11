@@ -11,7 +11,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <keycloak.version>21.1.1</keycloak.version>
+        <keycloak.version>22.0.0</keycloak.version>
     </properties>
 
     <dependencies>

@@ -3,6 +3,8 @@ package com.instipod.duouniversal;
 import com.duosecurity.Client;
 import com.duosecurity.exception.DuoException;
 import com.duosecurity.model.Token;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
@@ -11,8 +13,6 @@ import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.FormMessage;
 
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
