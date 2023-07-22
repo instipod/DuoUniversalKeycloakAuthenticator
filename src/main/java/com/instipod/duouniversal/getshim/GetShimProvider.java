@@ -1,12 +1,16 @@
 package com.instipod.duouniversal.getshim;
 
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.services.resource.RealmResourceProvider;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -25,14 +29,17 @@ public class GetShimProvider implements RealmResourceProvider {
     @GET
     @Path("/callback")
     @Produces(MediaType.TEXT_HTML)
-    public Response get(@Context UriInfo uriInfo) {
+    public Response get() {
+        KeycloakContext context = session.getContext();
         String realm = "";
+
         try {
-            realm = session.getContext().getRealm().getName();
+            realm = context.getRealm().getName();
         } catch (Exception exception) {
             // leave realm blank
         }
 
+        UriInfo uriInfo = context.getUri();
         MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
         if (realm.equalsIgnoreCase("") || !queryParams.containsKey("kc_execution") || !queryParams.containsKey("kc_client_id") || !queryParams.containsKey("kc_tab_id")) {
             // these fields are required, throw a bad request error
