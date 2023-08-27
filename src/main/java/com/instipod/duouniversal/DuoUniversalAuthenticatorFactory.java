@@ -20,6 +20,7 @@ public class DuoUniversalAuthenticatorFactory implements org.keycloak.authentica
     protected static final String DUO_GROUPS = "duoGroups";
     protected static final String DUO_FAIL_SAFE = "duoFailSafe";
     protected static final String DUO_CUSTOM_CLIENT_IDS = "duoClientIds";
+    protected static final String DUO_USE_IMPERSONATOR = "duoUseImpersonator";
 
     private final static List<ProviderConfigProperty> commonConfig;
     private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
@@ -35,6 +36,7 @@ public class DuoUniversalAuthenticatorFactory implements org.keycloak.authentica
                 .property().name(DUO_SECRET_KEY).label("Duo Secret Key").helpText("Obtained from admin console").type(ProviderConfigProperty.STRING_TYPE).add()
                 .property().name(DUO_GROUPS).label("Duo Groups").helpText("Comma separated list of groups that require Duo (optional)").type(ProviderConfigProperty.STRING_TYPE).add()
                 .property().name(DUO_FAIL_SAFE).label("Fail Safe").helpText("With this enabled, users will be able to login if Duo is not reachable").type(ProviderConfigProperty.BOOLEAN_TYPE).add()
+                .property().name(DUO_USE_IMPERSONATOR).label("Use Impersonator").helpText("With this enabled, the Duo transaction will be performed using the impersonator's username if one exists").type(ProviderConfigProperty.BOOLEAN_TYPE).add()
                 .property().name(DUO_CUSTOM_CLIENT_IDS).label("Client Overrides").helpText("Comma separated list of client-specific Duo key overrides (keycloak client id, duo client id, duo secret, (optional) API hostname)").type(ProviderConfigProperty.MULTIVALUED_STRING_TYPE).add()
                 .build()
         );

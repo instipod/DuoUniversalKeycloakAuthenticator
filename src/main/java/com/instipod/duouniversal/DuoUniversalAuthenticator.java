@@ -12,6 +12,7 @@ import org.keycloak.authentication.Authenticator;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.FormMessage;
+import org.keycloak.services.managers.AuthenticationManager;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -99,6 +100,40 @@ public class DuoUniversalAuthenticator implements Authenticator {
         return new Client.Builder(clientId, secret, hostname, redirectUrl).build();
     }
 
+    private String getImpersonatorId(AuthenticationFlowContext flowContext) {
+        AuthenticationManager.AuthResult authResult = AuthenticationManager.authenticateIdentityCookie(
+                flowContext.getSession(), flowContext.getRealm(), true);
+        if (authResult == null) {
+            return null;
+        }
+
+        UserSessionModel userSession = authResult.getSession();
+        Map<String, String> userSessionNotes = userSession.getNotes();
+        if (userSessionNotes.containsKey(ImpersonationSessionNote.IMPERSONATOR_ID.toString())) {
+            //This is an impersonated session, get impersonator id
+            return userSessionNotes.get(ImpersonationSessionNote.IMPERSONATOR_ID.toString());
+        } else {
+            //Not impersonating
+            return null;
+        }
+    }
+
+    private UserModel getImpersonatorOrUser(AuthenticationFlowContext flowContext) {
+        String impersonatorId = this.getImpersonatorId(flowContext);
+        UserModel baseUser = flowContext.getUser();
+
+        if (impersonatorId == null) {
+            return baseUser;
+        } else {
+            UserModel impersonatorUser = flowContext.getSession().users().getUserById(flowContext.getRealm(), impersonatorId);
+            if (impersonatorUser != null) {
+                return impersonatorUser;
+            } else {
+                return baseUser;
+            }
+        }
+    }
+
     @Override
     public void authenticate(AuthenticationFlowContext authenticationFlowContext) {
         AuthenticatorConfigModel authConfig = authenticationFlowContext.getAuthenticatorConfig();
@@ -135,7 +170,13 @@ public class DuoUniversalAuthenticator implements Authenticator {
         }
         String duoGroups = authConfigMap.getOrDefault(DuoUniversalAuthenticatorFactory.DUO_GROUPS, "none");
 
-        UserModel user = authenticationFlowContext.getUser();
+        UserModel user;
+        if (authConfigMap.getOrDefault(DuoUniversalAuthenticatorFactory.DUO_USE_IMPERSONATOR, "false").equalsIgnoreCase("true")) {
+            user = this.getImpersonatorOrUser(authenticationFlowContext);
+        } else {
+            user = authenticationFlowContext.getUser();
+        }
+
         if (user == null) {
             // no username
             logger.error("Received a flow request with no user!  Returning internal error.");
@@ -187,11 +228,13 @@ public class DuoUniversalAuthenticator implements Authenticator {
 
                 if (!loginState.equalsIgnoreCase(state)) {
                     // sanity check the session
+                    logger.warn("Login state did not match saved value.  Returning start page.");
                     this.startDuoProcess(authenticationFlowContext, username);
                     return;
                 }
                 if (!username.equalsIgnoreCase(loginUsername)) {
                     // sanity check the session
+                    logger.warnf("Duo username (%s) did not match saved value (%s).  Returning start page.", loginUsername, username);
                     this.startDuoProcess(authenticationFlowContext, username);
                     return;
                 }
