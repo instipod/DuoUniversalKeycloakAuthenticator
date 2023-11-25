@@ -52,12 +52,11 @@ public class DuoUniversalAuthenticator implements Authenticator {
         }
 
         String baseUrl = context.getHttpRequest().getUri().getBaseUri().toString();
-        baseUrl = baseUrl + "realms/" + context.getRealm().getName() + "/duo-universal/callback";
-        baseUrl = baseUrl + "?kc_client_id=" + context.getAuthenticationSession().getClient().getClientId();
-        baseUrl = baseUrl + "&kc_execution=" + context.getExecution().getId();
-        baseUrl = baseUrl + "&kc_tab_id=" + context.getAuthenticationSession().getTabId();
-        baseUrl = baseUrl + "&kc_session_code=" + sessionCode;
-
+        baseUrl += "realms/" + context.getRealm().getName() + "/duo-universal/callback";
+        baseUrl += "?kc_client_id=" + context.getAuthenticationSession().getClient().getClientId();
+        baseUrl += "&kc_execution=" + context.getExecution().getId();
+        baseUrl += "&kc_tab_id=" + context.getAuthenticationSession().getTabId();
+        baseUrl += "&kc_session_code=" + sessionCode;
         return baseUrl;
     }
 
@@ -109,13 +108,8 @@ public class DuoUniversalAuthenticator implements Authenticator {
 
         UserSessionModel userSession = authResult.getSession();
         Map<String, String> userSessionNotes = userSession.getNotes();
-        if (userSessionNotes.containsKey(ImpersonationSessionNote.IMPERSONATOR_ID.toString())) {
-            //This is an impersonated session, get impersonator id
-            return userSessionNotes.get(ImpersonationSessionNote.IMPERSONATOR_ID.toString());
-        } else {
-            //Not impersonating
-            return null;
-        }
+        // Check if we are impersonating a user, otherwise null
+        return userSessionNotes.getOrDefault(ImpersonationSessionNote.IMPERSONATOR_ID.toString(), null);
     }
 
     private UserModel getImpersonatorOrUser(AuthenticationFlowContext flowContext) {
@@ -293,7 +287,7 @@ public class DuoUniversalAuthenticator implements Authenticator {
     }
 
     private boolean duoRequired(String duoGroups, UserModel user) {
-        if (duoGroups == null || duoGroups.strip().equals("") || duoGroups.strip().equals("none")) {
+        if (duoGroups == null || duoGroups.isBlank() || duoGroups.strip().equals("none")) {
             return true;
         }
 
