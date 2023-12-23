@@ -275,7 +275,7 @@ public class DuoUniversalAuthenticator implements Authenticator {
 
         try {
             String startingUrl = duoClient.createAuthUrl(username, loginState);
-            authenticationFlowContext.challenge(Response.temporaryRedirect(new URI(startingUrl)).build());
+            authenticationFlowContext.challenge(Response.seeOther(new URI(startingUrl)).build());
         } catch (Exception exception) {
             if (authConfig.getConfig().getOrDefault(DuoUniversalAuthenticatorFactory.DUO_FAIL_SAFE, "true").equalsIgnoreCase("false")) {
                 // fail secure, deny login
