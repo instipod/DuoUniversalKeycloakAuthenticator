@@ -43,11 +43,14 @@ public class DuoUniversalAuthenticator implements Authenticator {
         }
 
         String baseUrl = context.getHttpRequest().getUri().getBaseUri().toString();
-        baseUrl += "realms/" + context.getRealm().getName() + "/duo-universal/callback";
-        baseUrl += "?kc_client_id=" + context.getAuthenticationSession().getClient().getClientId();
-        baseUrl += "&kc_execution=" + context.getExecution().getId();
-        baseUrl += "&kc_tab_id=" + context.getAuthenticationSession().getTabId();
-        baseUrl += "&kc_session_code=" + sessionCode;
+        baseUrl += "realms/" + URLEncoder.encode(context.getRealm().getName(), StandardCharsets.UTF_8) +
+                "/duo-universal/callback";
+        baseUrl += "?kc_client_id=" +
+                URLEncoder.encode(context.getAuthenticationSession().getClient().getClientId(), StandardCharsets.UTF_8);
+        baseUrl += "&kc_execution=" + URLEncoder.encode(context.getExecution().getId(), StandardCharsets.UTF_8);
+        baseUrl += "&kc_tab_id=" +
+                URLEncoder.encode(context.getAuthenticationSession().getTabId(), StandardCharsets.UTF_8);
+        baseUrl += "&kc_session_code=" + URLEncoder.encode(sessionCode, StandardCharsets.UTF_8);
 
         return baseUrl;
     }
@@ -95,7 +98,7 @@ public class DuoUniversalAuthenticator implements Authenticator {
                 clientId,
                 secret,
                 hostname,
-                URLEncoder.encode(redirectUrl, StandardCharsets.UTF_8).replaceAll("\\+", "%20")
+                redirectUrl.replaceAll("\\+", "%20")
         ).build();
     }
 
