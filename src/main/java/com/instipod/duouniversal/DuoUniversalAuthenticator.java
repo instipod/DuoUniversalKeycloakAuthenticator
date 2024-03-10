@@ -42,17 +42,13 @@ public class DuoUniversalAuthenticator implements Authenticator {
             sessionCode = context.generateAccessCode();
         }
 
-        String baseUrl = context.getHttpRequest().getUri().getBaseUri().toString();
-        baseUrl += "realms/" + URLEncoder.encode(context.getRealm().getName(), StandardCharsets.UTF_8) +
-                "/duo-universal/callback";
-        baseUrl += "?kc_client_id=" +
-                URLEncoder.encode(context.getAuthenticationSession().getClient().getClientId(), StandardCharsets.UTF_8);
-        baseUrl += "&kc_execution=" + URLEncoder.encode(context.getExecution().getId(), StandardCharsets.UTF_8);
-        baseUrl += "&kc_tab_id=" +
-                URLEncoder.encode(context.getAuthenticationSession().getTabId(), StandardCharsets.UTF_8);
-        baseUrl += "&kc_session_code=" + URLEncoder.encode(sessionCode, StandardCharsets.UTF_8);
-
-        return baseUrl;
+        return context.getHttpRequest().getUri().getBaseUri().toString().replaceAll("/+$", "") +
+                "/realms/" + URLEncoder.encode(context.getRealm().getName(), StandardCharsets.UTF_8) +
+                "/duo-universal/callback" +
+                "?kc_client_id=" + URLEncoder.encode(context.getAuthenticationSession().getClient().getClientId(), StandardCharsets.UTF_8) +
+                "&kc_execution=" + URLEncoder.encode(context.getExecution().getId(), StandardCharsets.UTF_8) +
+                "&kc_tab_id=" + URLEncoder.encode(context.getAuthenticationSession().getTabId(), StandardCharsets.UTF_8) +
+                "&kc_session_code=" + URLEncoder.encode(sessionCode, StandardCharsets.UTF_8);
     }
 
     private Client initDuoClient(AuthenticationFlowContext context, String redirectUrl) throws DuoException {
@@ -64,7 +60,7 @@ public class DuoUniversalAuthenticator implements Authenticator {
         String overrides = authConfig.getConfig().get(DuoUniversalAuthenticatorFactory.DUO_CUSTOM_CLIENT_IDS);
 
         if (overrides != null && !overrides.equalsIgnoreCase("")) {
-            // multivalue string seperator is ##
+            // multivalue string separator is ##
             String[] overridesSplit = overrides.split("##");
 
             for (String override : overridesSplit) {
