@@ -34,4 +34,4 @@ You should be able to build and package this project using Maven. The maven pack
 ## Building using Docker
 You should be able to build and package this project using Docker. The docker run command will compile the source code and build the JAR files for you. You will need to use the output JAR that includes dependencies as otherwise Keycloak won't be able to find the embedded libraries.
 
-`docker run --rm -it -v $(pwd):/project_src -w /project_src maven:3.8-eclipse-temurin-18 mvn clean package`
+`docker run --rm -it -v $(pwd):/project_src -w /project_src maven:3-eclipse-temurin-18 mvn clean package`
