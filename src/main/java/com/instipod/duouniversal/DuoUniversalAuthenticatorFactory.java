@@ -31,9 +31,9 @@ public class DuoUniversalAuthenticatorFactory implements org.keycloak.authentica
 
     static {
         commonConfig = Collections.unmodifiableList(ProviderConfigurationBuilder.create()
-                .property().name(DUO_API_HOSTNAME).label("Duo API Hostname").helpText("Domain name to contact").type(ProviderConfigProperty.STRING_TYPE).add()
-                .property().name(DUO_INTEGRATION_KEY).label("Duo Integration Key").helpText("Obtained from admin console").type(ProviderConfigProperty.STRING_TYPE).add()
-                .property().name(DUO_SECRET_KEY).label("Duo Secret Key").helpText("Obtained from admin console").type(ProviderConfigProperty.STRING_TYPE).add()
+                .property().name(DUO_API_HOSTNAME).label("Duo API Hostname").helpText("Domain name provided by Duo to contact").type(ProviderConfigProperty.STRING_TYPE).add()
+                .property().name(DUO_INTEGRATION_KEY).label("Duo Integration Key").helpText("Obtained from admin console, also called Client ID").type(ProviderConfigProperty.STRING_TYPE).add()
+                .property().name(DUO_SECRET_KEY).label("Duo Secret Key").helpText("Obtained from admin console, also called Client secret").type(ProviderConfigProperty.STRING_TYPE).add()
                 .property().name(DUO_GROUPS).label("Duo Groups").helpText("Comma separated list of groups that require Duo (optional)").type(ProviderConfigProperty.STRING_TYPE).add()
                 .property().name(DUO_FAIL_SAFE).label("Fail Safe").helpText("With this enabled, users will be able to login if Duo is not reachable").type(ProviderConfigProperty.BOOLEAN_TYPE).add()
                 .property().name(DUO_USE_IMPERSONATOR).label("Use Impersonator").helpText("With this enabled, the Duo transaction will be performed using the impersonator's username if one exists").type(ProviderConfigProperty.BOOLEAN_TYPE).add()
