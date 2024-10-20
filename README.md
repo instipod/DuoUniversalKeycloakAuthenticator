@@ -1,7 +1,7 @@
 # DuoUniversalKeycloakAuthenticator
 Authenticator for [Keycloak](https://github.com/keycloak/keycloak) that uses Duo's [Java Universal Prompt SDK](https://github.com/duosecurity/duo_universal_java) to challenge the user for Duo MFA as part of a Keycloak login flow.
 
-This has been tested against Keycloak 24.0.2 (Quarkus) and Java 18+. It may work against other versions of Keycloak and Java as well but is untested.
+This has been tested against Keycloak 26.0.1 (Quarkus) and Java 18+. It may work against other versions of Keycloak and Java as well but is untested.
 
 ## How to use
 ### Install the authenticator extension
