@@ -3,6 +3,7 @@ package com.instipod.duouniversal;
 import com.duosecurity.Client;
 import com.duosecurity.exception.DuoException;
 import com.duosecurity.model.Token;
+import com.google.common.base.Strings;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
@@ -186,6 +187,24 @@ public class DuoUniversalAuthenticator implements Authenticator {
             logger.infof("Skipping Duo MFA for %s based on group membership, groups=%s", username, userGroupsStr);
             authenticationFlowContext.success();
             return;
+        }
+
+        String regexMatch = authConfigMap.getOrDefault(DuoUniversalAuthenticatorFactory.DUO_USERNAME_FORMATTER_REGEX_MATCH, "none");
+        if (!regexMatch.equalsIgnoreCase("none")) {
+            String regexReplace = authConfigMap.getOrDefault(DuoUniversalAuthenticatorFactory.DUO_USERNAME_FORMATTER_REGEX_REPLACE, "");
+            String newUsername = username.replaceAll(regexMatch, regexReplace);
+            logger.infof("Used regex to update username to %s for user %s", newUsername, username);
+            username = newUsername;
+        }
+
+        String customAttributeName = authConfigMap.getOrDefault(DuoUniversalAuthenticatorFactory.DUO_USERNAME_CUSTOM_ATTRIBUTE, "none");
+        if (!customAttributeName.equalsIgnoreCase("none")) {
+            String customAttributeValue = user.getFirstAttribute(customAttributeName);
+
+            if(!Strings.isNullOrEmpty(customAttributeValue)){
+                logger.infof("Using custom attribute as username %s for user %s", customAttributeValue, username);
+                username = customAttributeValue;
+            }
         }
 
         // determine the user desire
