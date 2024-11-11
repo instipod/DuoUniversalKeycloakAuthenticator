@@ -21,7 +21,9 @@ public class DuoUniversalAuthenticatorFactory implements org.keycloak.authentica
     protected static final String DUO_FAIL_SAFE = "duoFailSafe";
     protected static final String DUO_CUSTOM_CLIENT_IDS = "duoClientIds";
     protected static final String DUO_USE_IMPERSONATOR = "duoUseImpersonator";
-
+    protected static final String DUO_USERNAME_FORMATTER_REGEX_MATCH = "duoUsernameFormatterRegexMatch";
+    protected static final String DUO_USERNAME_FORMATTER_REGEX_REPLACE = "duoUsernameFormatterRegexReplace";
+    protected static final String DUO_USERNAME_CUSTOM_ATTRIBUTE = "duoUsernameCustomAttribute";
     private final static List<ProviderConfigProperty> commonConfig;
     private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
             AuthenticationExecutionModel.Requirement.REQUIRED,
@@ -38,6 +40,9 @@ public class DuoUniversalAuthenticatorFactory implements org.keycloak.authentica
                 .property().name(DUO_FAIL_SAFE).label("Fail Safe").helpText("With this enabled, users will be able to login if Duo is not reachable").type(ProviderConfigProperty.BOOLEAN_TYPE).add()
                 .property().name(DUO_USE_IMPERSONATOR).label("Use Impersonator").helpText("With this enabled, the Duo transaction will be performed using the impersonator's username if one exists").type(ProviderConfigProperty.BOOLEAN_TYPE).add()
                 .property().name(DUO_CUSTOM_CLIENT_IDS).label("Client Overrides").helpText("Comma separated list of client-specific Duo key overrides (keycloak client id, duo client id, duo secret, (optional) API hostname)").type(ProviderConfigProperty.MULTIVALUED_STRING_TYPE).add()
+                .property().name(DUO_USERNAME_FORMATTER_REGEX_MATCH).label("Username Formatter regex-match").helpText("Regex to match with to format the username").type(ProviderConfigProperty.STRING_TYPE).add()
+                .property().name(DUO_USERNAME_FORMATTER_REGEX_REPLACE).label("Username Formatter regex-replace").helpText("Regex to replace with (supports named groups)").type(ProviderConfigProperty.STRING_TYPE).add()
+                .property().name(DUO_USERNAME_CUSTOM_ATTRIBUTE).label("Username custom attribute").helpText("Loads the Username from a custom attribute when available").type(ProviderConfigProperty.USER_PROFILE_ATTRIBUTE_LIST_TYPE).add()
                 .build()
         );
     }
