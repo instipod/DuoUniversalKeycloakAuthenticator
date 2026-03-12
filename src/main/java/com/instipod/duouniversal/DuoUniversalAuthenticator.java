@@ -304,11 +304,11 @@ public class DuoUniversalAuthenticator implements Authenticator {
         } catch (DuoException | URISyntaxException e) {
             logger.warn("Authentication against Duo failed with exception: " + e.getMessage(), e);
 
-            if (authConfig.getConfig().getOrDefault(DuoUniversalAuthenticatorFactory.DUO_FAIL_SAFE, "true").equalsIgnoreCase("true")) {
-                authenticationFlowContext.success();
-            } else {
+            if (authConfig.getConfig().getOrDefault(DuoUniversalAuthenticatorFactory.DUO_FAIL_SAFE, "false").equalsIgnoreCase("false")) {
                 // fail secure, deny login
                 authenticationFlowContext.failure(AuthenticationFlowError.INVALID_CREDENTIALS);
+            } else {
+                authenticationFlowContext.success();
             }
         }
     }
