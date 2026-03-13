@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.services.resource.RealmResourceProvider;
@@ -81,25 +82,10 @@ public class GetShimProvider implements RealmResourceProvider {
         actionUrl = actionUrl + "&state=" + urlEncode(state);
         actionUrl = actionUrl + "&duo_code=" + urlEncode(duoCode);
 
-        String redirect = """
-        <html>
-            <head>
-                <title>Duo Universal Callback</title>
-            </head>
-            <body onload="document.forms[0].submit()">
-                <form id="form1" action="{actionUrl}" method="post">
-                    <input type="hidden" name="authenticationExecution" value="{authenticationExecution}">
-                    <noscript>
-                        <input type="submit" value="Continue">
-                    </noscript>
-                </form>
-            </body>
-        </html>
-        """;
-        redirect = redirect.replace("{actionUrl}", Encode.forHtmlAttribute(actionUrl));
-        redirect = redirect.replace("{authenticationExecution}", Encode.forHtmlAttribute(authenticationExecution));
-
-        return Response.ok(redirect).build();
+        LoginFormsProvider forms = session.getProvider(LoginFormsProvider.class);
+        forms.setAttribute("actionUrl", Encode.forHtmlAttribute(actionUrl));
+        forms.setAttribute("authenticationExecution", Encode.forHtmlAttribute(authenticationExecution));
+        return forms.createForm("duo-universal-callback.ftl");
     }
 
     @Override
