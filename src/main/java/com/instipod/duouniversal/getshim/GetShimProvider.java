@@ -10,15 +10,22 @@ import jakarta.ws.rs.core.UriInfo;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.services.resource.RealmResourceProvider;
+import org.owasp.encoder.Encode;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 public class GetShimProvider implements RealmResourceProvider {
     private final KeycloakSession session;
 
     public GetShimProvider(KeycloakSession session) {
         this.session = session;
+    }
+
+    private static String urlEncode(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
     @Override
@@ -49,10 +56,12 @@ public class GetShimProvider implements RealmResourceProvider {
         String authenticationExecution = queryParams.getFirst("kc_execution");
         String clientId = queryParams.getFirst("kc_client_id");
         String tabId = queryParams.getFirst("kc_tab_id");
-        String actionUrl = uriInfo.getBaseUri().toString() + "realms/" + realm + "/login-actions/authenticate";
-        actionUrl = actionUrl + "?execution=" + authenticationExecution;
-        actionUrl = actionUrl + "&client_id=" + clientId;
-        actionUrl = actionUrl + "&tab_id=" + tabId;
+
+        String actionUrl = uriInfo.getBaseUri().toString() + "realms/" + urlEncode(realm);
+        actionUrl = actionUrl + "/login-actions/authenticate";
+        actionUrl = actionUrl + "?execution=" + urlEncode(authenticationExecution);
+        actionUrl = actionUrl + "&client_id=" + urlEncode(clientId);
+        actionUrl = actionUrl + "&tab_id=" + urlEncode(tabId);
 
         if (!queryParams.containsKey("kc_session_code") || !queryParams.containsKey("state") || !queryParams.containsKey("duo_code")) {
             // session code is required, redirect back to beginning of auth flow
@@ -68,11 +77,28 @@ public class GetShimProvider implements RealmResourceProvider {
         String state = queryParams.getFirst("state");
         String duoCode = queryParams.getFirst("duo_code");
 
-        actionUrl = actionUrl + "&session_code=" + sessionCode;
-        actionUrl = actionUrl + "&state=" + state;
-        actionUrl = actionUrl + "&duo_code=" + duoCode;
+        actionUrl = actionUrl + "&session_code=" + urlEncode(sessionCode);
+        actionUrl = actionUrl + "&state=" + urlEncode(state);
+        actionUrl = actionUrl + "&duo_code=" + urlEncode(duoCode);
 
-        String redirect = "<html><body onload=\"document.forms[0].submit()\"><form id=\"form1\" action=\"" + actionUrl + "\" method=\"post\"><input type=\"hidden\" name=\"authenticationExecution\" value=\"" + authenticationExecution + "\"><noscript><input type=\"submit\" value=\"Continue\"></noscript></form></body></html>";
+        String redirect = """
+        <html>
+            <head>
+                <title>Duo Universal Callback</title>
+            </head>
+            <body onload="document.forms[0].submit()">
+                <form id="form1" action="{actionUrl}" method="post">
+                    <input type="hidden" name="authenticationExecution" value="{authenticationExecution}">
+                    <noscript>
+                        <input type="submit" value="Continue">
+                    </noscript>
+                </form>
+            </body>
+        </html>
+        """;
+        redirect = redirect.replace("{actionUrl}", Encode.forHtmlAttribute(actionUrl));
+        redirect = redirect.replace("{authenticationExecution}", Encode.forHtmlAttribute(authenticationExecution));
+
         return Response.ok(redirect).build();
     }
 
