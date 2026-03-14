@@ -110,7 +110,7 @@ public class DuoUniversalAuthenticator implements Authenticator {
             return null;
         }
 
-        UserSessionModel userSession = authResult.getSession();
+        UserSessionModel userSession = authResult.session();
         Map<String, String> userSessionNotes = userSession.getNotes();
 
         // Check if we are impersonating a user, otherwise null
