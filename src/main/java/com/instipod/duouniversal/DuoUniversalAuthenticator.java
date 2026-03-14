@@ -228,6 +228,19 @@ public class DuoUniversalAuthenticator implements Authenticator {
 
             String redirectUrl = getRedirectUrl(authenticationFlowContext, false);
 
+            if (!loginState.equalsIgnoreCase(state)) {
+                // sanity check the session
+                logger.warn("Login state did not match saved value. Returning start page.");
+                startDuoProcess(authenticationFlowContext, username);
+                return;
+            }
+            if (!username.equalsIgnoreCase(loginUsername)) {
+                // sanity check the session
+                logger.warnf("Duo username (%s) did not match saved value (%s). Returning start page.", loginUsername, username);
+                startDuoProcess(authenticationFlowContext, username);
+                return;
+            }
+
             boolean authSuccess = false;
             try {
                 Client duoClient = initDuoClient(authenticationFlowContext, redirectUrl);
@@ -240,19 +253,6 @@ public class DuoUniversalAuthenticator implements Authenticator {
                 }
             } catch (DuoException e) {
                 logger.warn("There was a problem exchanging the Duo token. Returning start page.", e);
-                startDuoProcess(authenticationFlowContext, username);
-                return;
-            }
-
-            if (!loginState.equalsIgnoreCase(state)) {
-                // sanity check the session
-                logger.warn("Login state did not match saved value. Returning start page.");
-                startDuoProcess(authenticationFlowContext, username);
-                return;
-            }
-            if (!username.equalsIgnoreCase(loginUsername)) {
-                // sanity check the session
-                logger.warnf("Duo username (%s) did not match saved value (%s). Returning start page.", loginUsername, username);
                 startDuoProcess(authenticationFlowContext, username);
                 return;
             }
