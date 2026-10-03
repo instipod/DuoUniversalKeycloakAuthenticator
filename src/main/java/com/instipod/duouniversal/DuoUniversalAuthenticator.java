@@ -1,5 +1,6 @@
 package com.instipod.duouniversal;
 
+import com.duosecurity.AuthUrlOptions;
 import com.duosecurity.Client;
 import com.duosecurity.exception.DuoException;
 import com.duosecurity.model.Token;
@@ -299,7 +300,17 @@ public class DuoUniversalAuthenticator implements Authenticator {
         authenticationFlowContext.getAuthenticationSession().setAuthNote("DUO_USERNAME", username);
 
         try {
-            String startingUrl = duoClient.createAuthUrl(username, loginState);
+            AuthUrlOptions.Builder options = new AuthUrlOptions.Builder(username, loginState);
+
+            if (authConfig.getConfig().getOrDefault(DuoUniversalAuthenticatorFactory.DUO_SEND_CLIENT_INFO, "false").equalsIgnoreCase("true")) {
+                options.setDestAppName(authenticationFlowContext.getAuthenticationSession().getClient().getName());
+                options.setDestAppId(authenticationFlowContext.getAuthenticationSession().getClient().getId());
+            }
+            if (authConfig.getConfig().getOrDefault(DuoUniversalAuthenticatorFactory.DUO_FORCE_PROMPT, "false").equalsIgnoreCase("true")) {
+                options.setPrompt(AuthUrlOptions.Prompt.LOGIN);
+            }
+
+            String startingUrl = duoClient.createAuthUrl(options.build());
             authenticationFlowContext.challenge(Response.seeOther(new URI(startingUrl)).build());
         } catch (DuoException | URISyntaxException e) {
             logger.warn("Authentication against Duo failed with exception: " + e.getMessage(), e);
