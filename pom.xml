@@ -11,7 +11,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <keycloak.version>26.7.3</keycloak.version>
+        <keycloak.version>26.8.0</keycloak.version>
     </properties>
 
     <distributionManagement>
@@ -38,7 +38,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>4.33.2</version>
+            <version>4.33.6</version>
         </dependency>
 
         <dependency>
@@ -105,7 +105,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.21.6</version>
+            <version>2.21.7</version>
         </dependency>
 
         <dependency>
@@ -117,7 +117,7 @@
         <dependency>
             <groupId>org.owasp.encoder</groupId>
             <artifactId>encoder-jsp</artifactId>
-            <version>1.4.0</version>
+            <version>1.4.1</version>
         </dependency>
 
         <dependency>
