@@ -6,12 +6,12 @@
 
     <groupId>com.instipod</groupId>
     <artifactId>duouniversalkeycloakauthenticator</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
     <packaging>jar</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <keycloak.version>26.8.0</keycloak.version>
+        <keycloak.version>26.8.1</keycloak.version>
     </properties>
 
     <distributionManagement>
@@ -32,7 +32,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.3.1-jre</version>
+            <version>33.7.2-jre</version>
         </dependency>
 
         <dependency>
@@ -117,7 +117,7 @@
         <dependency>
             <groupId>org.owasp.encoder</groupId>
             <artifactId>encoder-jsp</artifactId>
-            <version>1.5.1</version>
+            <version>1.6.0</version>
         </dependency>
 
         <dependency>
